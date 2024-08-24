@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "purifly"
+version = "0.0.1"
+description = "A toolkit designed to support multimodal data transformation"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "fastapi", "fastapi-utils", "httpx", "numpy", "pydantic<=2.8.2", "requests", "toml",
+    "rich>=10.0.0", "shortuuid", "uvicorn", "tenacity>=8.2.2", "pytz", "cachetools", "GitPython",
+    "PyYAML"
+]
+
+[project.optional-dependencies]
+dev = ["black==24.4.2", "pylint==3.2.5", "pytest==8.2.2"]
+
+[project.urls]
+"Homepage" = "https://github.com/vtuber-plan/purifly"
+"Bug Tracker" = "https://github.com/vtuber-plan/purifly/issues"
+
+[tool.setuptools.packages.find]
+exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*"]
+
+[tool.wheel]
+exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*"]
