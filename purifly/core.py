@@ -1,64 +1,42 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Union, List
+from typing import Any, List, Optional, Union
+from . import Option, Mapper
 
 
+class Pipe(Mapper):
+    def __str__(self):
+        return self.__class__.__name__
 
-SampleType = Any
+    def __repr__(self):
+        return self.__class__.__name__
 
-
-class ProcessItem(ABC):
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return self.process(*args, **kwds)
-
-class ProcessFilter(ProcessItem):
     @abstractmethod
-    def process(self, data: SampleType) -> bool:
-        pass
-
-class ProcessMap(ProcessItem):
-    @abstractmethod
-    def process(self, data: SampleType) -> SampleType:
-        pass
-
-class ProcessReduce(ProcessItem):
-    @abstractmethod
-    def process(self, lhs: SampleType, rhs: SampleType) -> SampleType:
-        pass
-
-class ProcessConversion(ProcessItem):
-    @abstractmethod
-    def process(self, data: SampleType) -> Any:
-        pass
+    def map(self, data: Option) -> Option:
+        raise NotImplemented
 
 
-class PipelineBase(ABC):
-    @abstractmethod
-    def run(self, data: List[SampleType]) -> List[SampleType]:
-        pass
+class IdentityPipe(Mapper):
+    """Identity Element
+    I(x) = x \\
+    f·I(x) = I·f(x) = f(x)
+    """
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return self.run(*args, **kwds)
-
-
-class Pipeline(PipelineBase):
-    def __init__(self, steps: Optional[List[ProcessItem]]=None, num_proc: Optional[int]=None):
-        if steps is None:
-            self.steps: List[ProcessItem] = []
-        else:
-            self.steps: List[ProcessItem] = steps
-        self.num_proc = num_proc
-    
-    def add_step(self, step: Union[ProcessFilter, ProcessMap]):
-        self.steps.append(step)
-
-    def run(self, data: SampleType):
-        for step in self.steps:
-            if isinstance(step, ProcessFilter):
-                print(f"Starting Filter- {type(step)}")
-                data = data.filter(step, num_proc=self.num_proc)
-            elif isinstance(step, ProcessMap):
-                print(f"Starting Map - {type(step)}")
-                data = data.map(step, num_proc=self.num_proc)
-            else:
-                raise ValueError("Step must be either a ProcessFilter or ProcessMap.")
+    def map(self, data: Option) -> Option:
         return data
+
+
+class Sequencer(Pipe):
+    def __init__(self, pipes: List[Pipe]):
+        self.pipes = pipes
+
+    def map(self, data: Option) -> Option:
+        for pipe in self.pipes:
+            data = pipe.map(data)
+            if data.is_none():
+                print(f"Data is filtered out by {pipe}.")
+                break
+        return data
+
+
+class Pipeline:
+    pass
